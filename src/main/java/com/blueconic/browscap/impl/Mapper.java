@@ -8,6 +8,7 @@ import static com.blueconic.browscap.BrowsCapField.PLATFORM;
 import static com.blueconic.browscap.BrowsCapField.PLATFORM_VERSION;
 import static com.blueconic.browscap.Capabilities.UNKNOWN_BROWSCAP_VALUE;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
@@ -19,7 +20,7 @@ import java.util.Map.Entry;
 
 import com.blueconic.browscap.BrowsCapField;
 
-class Mapper {
+class Mapper implements Serializable {
 
     private final Map<BrowsCapField, Integer> myIndices;
 
