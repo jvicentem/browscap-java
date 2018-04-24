@@ -1,5 +1,7 @@
 package com.blueconic.browscap.impl;
 
+import java.io.Serializable;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -7,13 +9,13 @@ import java.util.concurrent.atomic.AtomicInteger;
  * This class represents a searchable useragent strings. It relies and simple char arrays for low memory use and fast
  * operations. It provided methods for finding substrings and provides caches for better performance.
  */
-class SearchableString {
+class SearchableString implements Serializable {
 
     private static final int[] EMPTY = new int[0];
     private static final int[][] SINGLE_VALUES = getSingleValues();
 
     private final char[] myChars;
-    private final int[][] myIndices;
+    private int[][] myIndices;
     private final Cache myPrefixCache = new Cache();
     private final Cache myPostfixCache = new Cache();
 
@@ -86,17 +88,29 @@ class SearchableString {
      * @return all indices where the literal argument can be found in this String.
      */
     int[] getIndices(final Literal literal) {
-
-        // Check whether the answer is already in the cache
         final int index = literal.getIndex();
-        final int[] cached = myIndices[index];
+
+        int[] cached;
+
+        try {
+            cached = myIndices[index];
+        } catch(java.lang.ArrayIndexOutOfBoundsException e) {
+            cached = null;
+        }
+
         if (cached != null) {
             return cached;
         }
 
         // Find all indices
         final int[] values = findIndices(literal);
-        myIndices[index] = values;
+
+        try {
+            myIndices[index] = values;
+        } catch(java.lang.ArrayIndexOutOfBoundsException e) {
+            myIndices = Arrays.copyOf(myIndices, myIndices.length + ((index+1) - myIndices.length) );
+        }
+
         return values;
     }
 
@@ -204,7 +218,7 @@ class SearchableString {
 /**
  * This combines a String value with a unique int value. The int value is used for caching of results.
  */
-class Literal {
+class Literal implements Serializable {
 
     // Keep track of the total number of instances
     private static final AtomicInteger NUMBER_OF_INSTANCES = new AtomicInteger();

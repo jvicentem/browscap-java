@@ -5,6 +5,7 @@ import static java.util.Collections.singleton;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
@@ -25,7 +26,7 @@ import com.opencsv.CSVReader;
 /**
  * This class is responsible for parsing rules and creating the efficient java representation.
  */
-public class UserAgentFileParser {
+public class UserAgentFileParser implements Serializable {
 
     // Mapping substrings to unique literal for caching of lookups
     private final Map<String, Literal> myUniqueLiterals = new HashMap<>();

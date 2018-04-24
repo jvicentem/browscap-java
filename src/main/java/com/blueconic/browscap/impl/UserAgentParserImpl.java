@@ -3,6 +3,7 @@ package com.blueconic.browscap.impl;
 import static java.util.Arrays.parallelSort;
 import static java.util.stream.Collectors.toList;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -18,7 +19,7 @@ import com.blueconic.browscap.UserAgentParser;
  * This class is responsible for determining the best matching useragent rule to determine the properties for a
  * useragent string.
  */
-class UserAgentParserImpl implements UserAgentParser {
+class UserAgentParserImpl implements UserAgentParser, Serializable {
 
     // Common substrings to filter irrelevant rules and speed up processing
     static final String[] COMMON = {"-", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "profile", "player",
@@ -115,9 +116,15 @@ class UserAgentParserImpl implements UserAgentParser {
     Filter createContainsFilter(final String pattern) {
         final Literal literal = new Literal(pattern);
 
-        final Predicate<SearchableString> pred = c -> c.getIndices(literal).length > 0;
+        final PredicateSerializable<SearchableString> pred = c -> {
+            SearchableString s = (SearchableString) c;
+            return s.getIndices(literal).length > 0;
+        };
 
-        final Predicate<Rule> matches = rule -> rule.requires(pattern);
+        final PredicateSerializable<Rule> matches = rule -> {
+            Rule r = (Rule) rule;
+            return r.requires(pattern);
+        };
 
         return new Filter(pred, matches);
     }
@@ -125,10 +132,14 @@ class UserAgentParserImpl implements UserAgentParser {
     Filter createPrefixFilter(final String pattern) {
         final Literal literal = new Literal(pattern);
 
-        final Predicate<SearchableString> pred = s -> s.startsWith(literal);
+        final PredicateSerializable<SearchableString> pred = s -> {
+                SearchableString ss = (SearchableString) s;
+                return ss.startsWith(literal);
+        };
 
-        final Predicate<Rule> matches = rule -> {
-            final Literal prefix = rule.getPrefix();
+        final PredicateSerializable<Rule> matches = rule -> {
+            Rule r = (Rule) rule;
+            final Literal prefix = r.getPrefix();
             return prefix != null && prefix.toString().startsWith(pattern);
         };
 
@@ -138,9 +149,8 @@ class UserAgentParserImpl implements UserAgentParser {
     /**
      * Filter expression to can exclude a number of rules if a useragent doesn't meet it's predicate.
      */
-    class Filter {
-
-        private final Predicate<SearchableString> myUserAgentPredicate;
+    class Filter implements Serializable {
+        private final PredicateSerializable<SearchableString> myUserAgentPredicate;
         private final BitSet myMask;
 
         /**
@@ -148,7 +158,7 @@ class UserAgentParserImpl implements UserAgentParser {
          * @param userAgentPredicate The predicate for matching user agents.
          * @param patternPredicate The corresponding predicate for matching rule
          */
-        Filter(final Predicate<SearchableString> userAgentPredicate, final Predicate<Rule> patternPredicate) {
+        Filter(final PredicateSerializable<SearchableString> userAgentPredicate, final PredicateSerializable<Rule> patternPredicate) {
             myUserAgentPredicate = userAgentPredicate;
             myMask = new BitSet(myRules.length);
             for (int i = 0; i < myRules.length; i++) {
@@ -163,5 +173,9 @@ class UserAgentParserImpl implements UserAgentParser {
                 resultExcludes.or(myMask);
             }
         }
+    }
+
+    @FunctionalInterface
+    interface PredicateSerializable<T> extends Predicate, Serializable {
     }
 }
