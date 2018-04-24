@@ -7,13 +7,14 @@ import static com.blueconic.browscap.BrowsCapField.DEVICE_TYPE;
 import static com.blueconic.browscap.BrowsCapField.PLATFORM;
 import static com.blueconic.browscap.BrowsCapField.PLATFORM_VERSION;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Map;
 
 import com.blueconic.browscap.BrowsCapField;
 import com.blueconic.browscap.Capabilities;
 
-class CapabilitiesImpl implements Capabilities {
+class CapabilitiesImpl implements Capabilities, Serializable {
 
     private final String[] myValues;
     private final Mapper myMapper;

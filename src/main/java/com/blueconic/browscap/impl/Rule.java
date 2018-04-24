@@ -2,11 +2,13 @@ package com.blueconic.browscap.impl;
 
 import com.blueconic.browscap.Capabilities;
 
+import java.io.Serializable;
+
 /**
  * Instances of this class represent a line of the browscap data. This class is responsible for checking a potential
  * match and for supplying the corresponding browser properties.
  */
-class Rule {
+class Rule implements Serializable {
 
     // The properties of the matching pattern
     private final Literal myPrefix;
